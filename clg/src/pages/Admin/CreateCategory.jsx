@@ -1,3 +1,152 @@
+// import React, { useEffect, useState } from "react";
+// import Layout from "../../components/Layouts/Layout";
+// import AdminMenu from "../../components/Layouts/AdminMenu";
+// import toast from "react-hot-toast";
+// import axios from "axios";
+// import { Modal } from "antd";
+// import CategoryForm from "../../components/Form/CategoryForm";
+
+// const CreateCategory = () => {
+//   const [categories, setCategories] = useState([]);
+//   const [name, setName] = useState("");
+//   const [visible, setVisible] = useState(false);
+//   const [selected, setSelected] = useState(null);
+//   const [updatedName, setUpdatedName] = useState("");
+
+//   // Fetch all categories
+//   const getAllCategories = async () => {
+//     try {
+//       const { data } = await axios.get("http://localhost:8080/api/v1/category/get-category");
+//       if (data?.success) setCategories(data.category);
+//     } catch (error) {
+//       console.log(error);
+//       toast.error("Something went wrong while fetching categories");
+//     }
+//   };
+
+//   useEffect(() => {
+//     getAllCategories();
+//   }, []);
+
+//   // Create category
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     try {
+//       const { data } = await axios.post("http://localhost:8080/api/v1/category/create-category", { name });
+//       if (data?.success) {
+//         toast.success(`${name} is created`);
+//         getAllCategories();
+//       } else {
+//         toast.error(data.message);
+//       }
+//     } catch (error) {
+//       console.log(error);
+//       toast.error("Something went wrong in input form");
+//     }
+//   };
+
+//   // Update category
+//   const handleUpdate = async (e) => {
+//     e.preventDefault();
+//     try {
+//       const { data } = await axios.put(`http://localhost:8080/api/v1/category/update-category/${selected._id}`, {
+//         name: updatedName,
+//       });
+//       if (data?.success) {
+//         toast.success(`${updatedName} is updated`);
+//         setSelected(null);
+//         setUpdatedName("");
+//         setVisible(false);
+//         getAllCategories();
+//       } else {
+//         toast.error(data.message);
+//       }
+//     } catch (error) {
+//       console.log(error);
+//       toast.error("Something went wrong while updating category");
+//     }
+//   };
+
+//   // Delete category
+//   const handleDelete = async (pId) => {
+//     try {
+//       const { data } = await axios.delete(`http://localhost:8080/api/v1/category/delete-category/${pId}`);
+//       if (data.success) {
+//         toast.success("Category deleted successfully");
+//         getAllCategories();
+//       } else {
+//         toast.error(data.message);
+//       }
+//     } catch (error) {
+//       console.log(error);
+//       toast.error("Something went wrong while deleting category");
+//     }
+//   };
+
+//   return (
+//     <Layout title={"Dashboard - Create Category"}>
+//       <div className="container-fluid m-3 p-3 dashboard">
+//         <div className="row">
+//           <div className="col-md-3">
+//             <AdminMenu />
+//           </div>
+//           <div className="col-md-9">
+//             <div className="p-3 w-50">
+//               <CategoryForm handleSubmit={handleSubmit} value={name} setValue={setName} />
+//             </div>
+
+//             <div className="w-75">
+//               <table className="table">
+//                 <thead>
+//                   <tr>
+//                     <th scope="col">Name</th>
+//                     <th scope="col">Actions</th>
+//                   </tr>
+//                 </thead>
+//                 <tbody>
+//                   {categories?.map((c) => (
+//                     <tr key={c._id}>
+//                       <td>{c.name}</td>
+//                       <td>
+//                         <button
+//                           className="btn btn-primary m-2"
+//                           onClick={() => {
+//                             setVisible(true);
+//                             setUpdatedName(c.name);
+//                             setSelected(c);
+//                           }}
+//                         >
+//                           Edit
+//                         </button>
+//                         <button
+//                           className="btn btn-danger m-2"
+//                           onClick={() => handleDelete(c._id)}
+//                         >
+//                           Delete
+//                         </button>
+//                       </td>
+//                     </tr>
+//                   ))}
+//                 </tbody>
+//               </table>
+//             </div>
+
+//             <Modal open={visible} onCancel={() => setVisible(false)} footer={null}>
+//               <CategoryForm
+//                 value={updatedName}
+//                 setValue={setUpdatedName}
+//                 handleSubmit={handleUpdate}
+//               />
+//             </Modal>
+//           </div>
+//         </div>
+//       </div>
+//     </Layout>
+//   );
+// };
+
+// export default CreateCategory;
+
 import React, { useEffect, useState } from "react";
 import Layout from "../../components/Layouts/Layout";
 import AdminMenu from "../../components/Layouts/AdminMenu";
@@ -5,19 +154,27 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { Modal } from "antd";
 import CategoryForm from "../../components/Form/CategoryForm";
+import { useAuth } from "../../context/auth";
 
 const CreateCategory = () => {
+  const { auth } = useAuth();
+
   const [categories, setCategories] = useState([]);
   const [name, setName] = useState("");
   const [visible, setVisible] = useState(false);
   const [selected, setSelected] = useState(null);
   const [updatedName, setUpdatedName] = useState("");
 
-  // Fetch all categories
+  // ==================== GET ALL CATEGORIES ====================
   const getAllCategories = async () => {
     try {
-      const { data } = await axios.get("http://localhost:8080/api/v1/category/get-category");
-      if (data?.success) setCategories(data.category);
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/v1/category/get-category`
+      );
+
+      if (data?.success) {
+        setCategories(data.category);
+      }
     } catch (error) {
       console.log(error);
       toast.error("Something went wrong while fetching categories");
@@ -28,13 +185,23 @@ const CreateCategory = () => {
     getAllCategories();
   }, []);
 
-  // Create category
+  // ==================== CREATE CATEGORY ====================
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axios.post("http://localhost:8080/api/v1/category/create-category", { name });
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/v1/category/create-category`,
+        { name },
+        {
+          headers: {
+            Authorization: auth?.token,
+          },
+        }
+      );
+
       if (data?.success) {
         toast.success(`${name} is created`);
+        setName("");
         getAllCategories();
       } else {
         toast.error(data.message);
@@ -45,13 +212,20 @@ const CreateCategory = () => {
     }
   };
 
-  // Update category
+  // ==================== UPDATE CATEGORY ====================
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axios.put(`http://localhost:8080/api/v1/category/update-category/${selected._id}`, {
-        name: updatedName,
-      });
+      const { data } = await axios.put(
+        `${import.meta.env.VITE_BACKEND_URL}/api/v1/category/update-category/${selected._id}`,
+        { name: updatedName },
+        {
+          headers: {
+            Authorization: auth?.token,
+          },
+        }
+      );
+
       if (data?.success) {
         toast.success(`${updatedName} is updated`);
         setSelected(null);
@@ -67,11 +241,19 @@ const CreateCategory = () => {
     }
   };
 
-  // Delete category
+  // ==================== DELETE CATEGORY ====================
   const handleDelete = async (pId) => {
     try {
-      const { data } = await axios.delete(`http://localhost:8080/api/v1/category/delete-category/${pId}`);
-      if (data.success) {
+      const { data } = await axios.delete(
+        `${import.meta.env.VITE_BACKEND_URL}/api/v1/category/delete-category/${pId}`,
+        {
+          headers: {
+            Authorization: auth?.token,
+          },
+        }
+      );
+
+      if (data?.success) {
         toast.success("Category deleted successfully");
         getAllCategories();
       } else {
@@ -87,20 +269,27 @@ const CreateCategory = () => {
     <Layout title={"Dashboard - Create Category"}>
       <div className="container-fluid m-3 p-3 dashboard">
         <div className="row">
+          {/* Admin Menu */}
           <div className="col-md-3">
             <AdminMenu />
           </div>
+
+          {/* Content */}
           <div className="col-md-9">
             <div className="p-3 w-50">
-              <CategoryForm handleSubmit={handleSubmit} value={name} setValue={setName} />
+              <CategoryForm
+                handleSubmit={handleSubmit}
+                value={name}
+                setValue={setName}
+              />
             </div>
 
             <div className="w-75">
               <table className="table">
                 <thead>
                   <tr>
-                    <th scope="col">Name</th>
-                    <th scope="col">Actions</th>
+                    <th>Name</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -131,6 +320,7 @@ const CreateCategory = () => {
               </table>
             </div>
 
+            {/* Modal */}
             <Modal open={visible} onCancel={() => setVisible(false)} footer={null}>
               <CategoryForm
                 value={updatedName}

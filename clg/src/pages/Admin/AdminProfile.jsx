@@ -18,9 +18,15 @@ export default function AdminProfile() {
     e.preventDefault();
     try {
       const { data } = await axios.put(
-        "http://localhost:8080/api/v1/auth/profile",
-        { name, email, phone, password }
-      );
+  `${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/profile`,
+  { name, email, phone, password },
+  {
+    headers: {
+      Authorization: auth?.token,
+    },
+  }
+);
+
 
       if (data?.success) {
         toast.success("Profile Updated Successfully");
