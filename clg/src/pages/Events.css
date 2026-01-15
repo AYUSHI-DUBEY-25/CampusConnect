@@ -1,0 +1,112 @@
+/* 🌸 Soft Rosé Theme – Minimal & Classy */
+.home-page {
+  background: #fafafa;
+  padding-bottom: 40px;
+}
+
+/* 🌸 FILTER SIDEBAR */
+.filters {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f2f2f2;
+}
+
+.filters h4 {
+  color: #d81b60;
+  font-weight: 600;
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+/* subtle pink text */
+.filters .ant-checkbox-wrapper,
+.ant-radio-wrapper {
+  color: #c2185b !important;
+  font-size: 15px;
+}
+
+/* RESET BUTTON */
+.filters button {
+  background-color: #d81b60 !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+/* 🌸 EVENT CARDS */
+.card {
+  border-radius: 16px !important;
+  border: 1px solid #f0f0f0 !important;
+  background: #ffffff;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.06);
+  transition: all 0.25s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0px 8px 22px rgba(0, 0, 0, 0.12);
+}
+
+/* CARD IMAGE */
+.card-img-top {
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+/* CARD TITLE + PRICE */
+.card-name-price h5 {
+  font-weight: 600;
+  color: #ad1457;
+}
+
+/* CARD DESCRIPTION */
+.card-text {
+  color: #6c6c6c;
+  font-size: 14px;
+}
+
+/* DETAILS BUTTON */
+.btn-info {
+  background-color: #d81b60 !important;
+  border: none !important;
+  color: #fff !important;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-weight: 500;
+}
+
+.btn-info:hover {
+  background-color: #ad1457 !important;
+}
+
+/* ADD TO CART */
+.btn-dark {
+  background-color: #f8bbd0 !important; 
+  border: none !important;
+  color: #880e4f !important;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-weight: 500;
+}
+
+.btn-dark:hover {
+  background-color: #f48fb1 !important;
+}
+
+/* LOAD MORE BUTTON */
+.loadmore {
+  background-color: #d81b60 !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 10px;
+}
+
+.loadmore:hover {
+  background-color: #ad1457 !important;
+}

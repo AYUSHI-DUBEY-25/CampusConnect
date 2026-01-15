@@ -1,0 +1,66 @@
+/* 🌸 Soft Minimal Login Page */
+
+.login-page {
+  height: 90vh;
+  background: linear-gradient(to bottom right, #fafafa, #ffeef5);
+}
+
+/* Login Card */
+.login-card {
+  background: #ffffff;
+  border-radius: 16px;
+  width: 380px;
+  border: 1px solid #f2f2f2;
+  box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.08);
+  transition: 0.3s ease-in-out;
+}
+
+.login-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0px 10px 28px rgba(0, 0, 0, 0.12);
+}
+
+/* Heading */
+.login-heading {
+  color: #d81b60;
+  font-weight: 700;
+  font-size: 22px;
+}
+
+/* Labels */
+.form-label {
+  color: #880e4f;
+}
+
+/* Input Box */
+.form-control {
+  border-radius: 10px;
+  border: 1px solid #e0e0e0 !important;
+  padding: 10px;
+  font-size: 15px;
+}
+
+.form-control:focus {
+  border-color: #d81b60 !important;
+  box-shadow: 0 0 4px rgba(216, 27, 96, 0.3);
+}
+
+/* Login Button */
+.btn-primary {
+  background-color: #d81b60 !important;
+  border: none !important;
+  border-radius: 10px;
+  padding: 10px;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background-color: #ad1457 !important;
+}
+
+/* Responsive */
+@media (max-width: 450px) {
+  .login-card {
+    width: 90%;
+  }
+}

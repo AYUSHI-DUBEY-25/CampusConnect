@@ -1,0 +1,50 @@
+/* Navbar base styling */
+.custom-navbar {
+  background-color: #fae0e0;  
+  border-bottom: 2px solid #ffd6e0;
+  padding: 0.8rem 1rem;
+}
+.custom-navbar .container {
+  max-width: 100% !important;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+/* Brand text */
+.text-pink {
+  color: #e77aa2; /* Soft rose pink */
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Hover for links */
+.nav-link:hover {
+  color: #ff6fa5 ;
+  transition: color 0.3s ease;
+}
+
+/* Pink Button */
+.btn-pink {
+  background-color: #ff6fa5;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-pink:hover {
+  background-color: #ff4d88;
+  transform: scale(1.05);
+}
+
+/* Navbar shadow for soft depth */
+.shadow-sm {
+  box-shadow: 0 2px 8px rgba(255, 182, 193, 0.3);
+}
+
+/* Toggler icon color (mobile menu) */
+.navbar-toggler {
+  border-color: #ffc0cb;
+}
