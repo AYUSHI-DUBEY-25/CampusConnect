@@ -11,11 +11,13 @@ import art from '../assets/image/art.png'
 import music from '../assets/image/music.png'
 import code from '../assets/image/code.png'
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 export default function Home() {
 const [subscriberEmail, setSubscriberEmail] = useState("");
 const [subLoading, setSubLoading] = useState(false);
+const navigate = useNavigate();
 const handleSubscribe = async () => {
   const email = subscriberEmail.trim();
   if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
@@ -109,7 +111,7 @@ const resp = await fetch(
       marginTop: "15px",
       cursor: "pointer",
     }}
-    onClick={() => (window.location.href = "/events")}
+    onClick={() => navigate("/events")}
   >
     More 
   </button>
@@ -230,20 +232,21 @@ const resp = await fetch(
          BOOK YOUR TICKETS NOW!!
         </p>
          <button
-    style={{
-      padding: "10px 20px",
-      backgroundColor: "#ff6b6b",
-      border: "none",
-      borderRadius: "8px",
-      fontSize: "1rem",
-      color: "white",
-      marginTop: "15px",
-      cursor: "pointer",
-    }}
-    onClick={() => (window.location.href = "/events")}
-  >
-    More 
-  </button>
+  style={{
+    padding: "10px 20px",
+    backgroundColor: "#ff6b6b",
+    border: "none",
+    borderRadius: "8px",
+    fontSize: "1rem",
+    color: "white",
+    marginTop: "15px",
+    cursor: "pointer",
+  }}
+  onClick={() => navigate("/events")}
+>
+  More
+</button>
+
       </div>
     </div>
   </div>
