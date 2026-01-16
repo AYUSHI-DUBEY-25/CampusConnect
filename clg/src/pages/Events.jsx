@@ -316,7 +316,11 @@ const EventCard = ({ p }) => {
                     borderRadius: 8,
                   }}
                 >
-                  <Checkbox onChange={(e) => handleFilter(e.target.checked, c._id)} />
+                  <Checkbox
+  checked={checked.includes(c._id)}
+  onChange={(e) => handleFilter(e.target.checked, c._id)}
+/>
+
                   <span style={{ fontSize: 14 }}>{c.name}</span>
                 </label>
               ))}
