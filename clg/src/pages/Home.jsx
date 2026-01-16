@@ -727,79 +727,219 @@
 //     </Layout>
 //   );
 // }
-import React, { useEffect, useState } from "react";
+
+import React, { useState } from "react";
 import Layout from "../components/Layouts/Layout";
-import axios from "axios";
+import event1 from "../assets/image/event1.png";
+import event2 from "../assets/image/event2.png";
+import event3 from "../assets/image/event3.png";
+import event4 from "../assets/image/event4.png";
+import drama from "../assets/image/drama.png";
+import sports from "../assets/image/sports.png";
+import dance from "../assets/image/dance.png";
+import art from "../assets/image/art.png";
+import music from "../assets/image/music.png";
+import code from "../assets/image/code.png";
 import toast from "react-hot-toast";
 
-const Events = () => {
-  const [events, setEvents] = useState([]);
+export default function Home() {
+  const [subscriberEmail, setSubscriberEmail] = useState("");
+  const [subLoading, setSubLoading] = useState(false);
 
-  const getAllEvents = async () => {
+  const handleSubscribe = async () => {
+    const email = subscriberEmail.trim();
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+      toast.error("Please enter a valid email.");
+      return;
+    }
+
+    setSubLoading(true);
     try {
-      const { data } = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/v1/event/event-list/1`
+      const resp = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/subscribe`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }
       );
-      if (data?.success) {
-        setEvents(data.events);
+
+      const text = await resp.text();
+      let data = null;
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = { message: text };
+        }
       }
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to load events");
+
+      if (resp.ok) {
+        toast.success(data?.message || "Subscribed!");
+        setSubscriberEmail("");
+      } else {
+        toast.error(data?.message || "Subscription failed");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Network error. Try again later.");
+    } finally {
+      setSubLoading(false);
     }
   };
 
-  useEffect(() => {
-    getAllEvents();
-  }, []);
-
   return (
-    <Layout title="All Events">
-      <div className="container mt-4">
-        <h2 className="text-center mb-4">All Events</h2>
+    <Layout title="CampusConnect — Home">
+      <div className="main">
 
-        <div className="row g-4">
-          {events.map((e) => (
-            <div key={e._id} className="col-12 col-md-6 col-lg-4">
-              <div className="card h-100 shadow-sm border-0">
+        {/* CAROUSEL */}
+        <div
+          id="demo"
+          className="carousel slide"
+          data-bs-ride="carousel"
+          style={{ maxWidth: "90%", margin: "20px auto" }}
+        >
+          <div className="carousel-inner">
 
-                {/* IMAGE */}
+            {[event1, event2, event3, event4].map((img, idx) => (
+              <div
+                key={idx}
+                className={`carousel-item ${idx === 0 ? "active" : ""}`}
+              >
                 <img
-                  src={`${import.meta.env.VITE_BACKEND_URL}/api/v1/event/event-photo/${e._id}`}
-                  alt={e.name}
-                  className="card-img-top"
+                  src={img}
+                  alt="Home"
                   style={{
-                    height: "220px",
+                    width: "100%",
+                    height: "500px",
                     objectFit: "cover",
+                    filter: "brightness(70%)",
+                    borderRadius: "12px",
                   }}
                 />
 
-                {/* BODY */}
-                <div className="card-body d-flex flex-column">
-                  <h5 className="card-title">{e.name}</h5>
-
-                  <p className="card-text text-muted">
-                    {e.description?.substring(0, 80)}...
+                <div className="carousel-caption text-center">
+                  <p
+                    style={{
+                      fontSize: "1.2rem",
+                      fontWeight: 500,
+                      marginTop: "10px",
+                      textShadow: "0 3px 6px rgba(0,0,0,0.6)",
+                    }}
+                  >
+                    BOOK YOUR TICKETS NOW!!
                   </p>
 
-                  {/* BUTTONS FIXED AT BOTTOM */}
-                  <div className="mt-auto d-flex gap-2">
-                    <button className="btn btn-danger btn-sm w-50">
-                      More Details
-                    </button>
-                    <button className="btn btn-outline-danger btn-sm w-50">
-                      Add to Cart
-                    </button>
-                  </div>
+                  <button
+                    style={{
+                      padding: "10px 20px",
+                      backgroundColor: "#ff6b6b",
+                      border: "none",
+                      borderRadius: "8px",
+                      fontSize: "1rem",
+                      color: "white",
+                      marginTop: "15px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => (window.location.href = "/events")}
+                  >
+                    More
+                  </button>
                 </div>
-
               </div>
-            </div>
-          ))}
+            ))}
+
+          </div>
+
+          <button
+            className="carousel-control-prev"
+            type="button"
+            data-bs-target="#demo"
+            data-bs-slide="prev"
+          >
+            <span
+              className="carousel-control-prev-icon"
+              style={{ filter: "invert(1)" }}
+            />
+          </button>
+
+          <button
+            className="carousel-control-next"
+            type="button"
+            data-bs-target="#demo"
+            data-bs-slide="next"
+          >
+            <span
+              className="carousel-control-next-icon"
+              style={{ filter: "invert(1)" }}
+            />
+          </button>
         </div>
+
+        {/* INFO BOXES */}
+        <div className="main" style={{ display: "flex" }}>
+          <div className="container" style={{ backgroundColor: "beige", padding: 20, margin: 20, borderRadius: 10 }}>
+            <h1>Discover Campus Events</h1>
+            <p>Explore all upcoming workshops, fests, seminars, cultural nights, and club activities happening across the campus.</p>
+          </div>
+
+          <div className="container" style={{ backgroundColor: "rgb(209,209,189)", padding: 20, margin: 20, borderRadius: 10 }}>
+            <h1>Quick & Easy Registrations</h1>
+            <p>Students can register for events instantly and receive updates without any manual forms or long processes.</p>
+          </div>
+
+          <div className="container" style={{ backgroundColor: "rgb(237,237,195)", padding: 20, margin: 20, borderRadius: 10 }}>
+            <h1>Tools for Organizers</h1>
+            <p>Clubs and societies head can create events, manage attendees and keep everything organized effortlessly.</p>
+          </div>
+        </div>
+
+        {/* SUBSCRIBE */}
+        <div
+          className="container mt-3"
+          style={{
+            padding: "20px",
+            borderRadius: "10px",
+            textAlign: "center",
+            backgroundColor: "#fff5f8",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
+          }}
+        >
+          <h2>Stay Updated With New Events</h2>
+          <p>Never miss an exciting college event again!</p>
+
+          <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={subscriberEmail}
+              onChange={(e) => setSubscriberEmail(e.target.value)}
+              style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #ddd", width: 260 }}
+            />
+
+            <button
+              onClick={handleSubscribe}
+              disabled={subLoading}
+              style={{
+                padding: "10px 20px",
+                borderRadius: 8,
+                border: "none",
+                backgroundColor: "#ff6b6b",
+                color: "white",
+                fontWeight: "bold",
+                cursor: subLoading ? "not-allowed" : "pointer",
+              }}
+            >
+              {subLoading ? "Subscribing..." : "Subscribe"}
+            </button>
+          </div>
+
+          <p style={{ marginTop: 10, fontSize: "0.9rem", color: "#777" }}>
+            We only send event updates. No spam.
+          </p>
+        </div>
+
       </div>
     </Layout>
   );
-};
-
-export default Events;
+}
