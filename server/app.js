@@ -17,7 +17,10 @@ connectDB();
 const app = express();
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: [
+    "http://localhost:5173",
+    "https://campus-connect-brown-phi.vercel.app"
+  ],
   credentials: true,
 }));
 
