@@ -326,20 +326,26 @@ const EventCard = ({ p }) => {
           <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
             <div>
               <button
-                className="btn"
-                onClick={() => window.location.reload()}
-                style={{
-                  background: "#ef4444",
-                  color: "white",
-                  padding: "8px 12px",
-                  borderRadius: 8,
-                  border: "none",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                Reset Filters
-              </button>
+  className="btn"
+  onClick={() => {
+    setChecked([]);
+    setRadio([]);
+    setPage(1);
+    getAllEvents();
+  }}
+  style={{
+    background: "#ef4444",
+    color: "white",
+    padding: "8px 12px",
+    borderRadius: 8,
+    border: "none",
+    fontWeight: 700,
+    cursor: "pointer",
+  }}
+>
+  Reset Filters
+</button>
+
             </div>
           </div>
         </div>
