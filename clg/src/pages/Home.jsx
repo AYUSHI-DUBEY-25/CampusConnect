@@ -775,7 +775,7 @@ export default function Home() {
       }
 
       if (resp.ok) {
-        toast.success(data?.message || "Subscribed!");
+        toast.success(data?.message || "Subscribed! Check your email.");
         setSubscriberEmail("");
       } else {
         toast.error(data?.message || "Subscription failed");
@@ -800,7 +800,6 @@ export default function Home() {
           style={{ maxWidth: "90%", margin: "20px auto" }}
         >
           <div className="carousel-inner">
-
             {[event1, event2, event3, event4].map((img, idx) => (
               <div
                 key={idx}
@@ -817,7 +816,6 @@ export default function Home() {
                     borderRadius: "12px",
                   }}
                 />
-
                 <div className="carousel-caption text-center">
                   <p
                     style={{
@@ -829,7 +827,6 @@ export default function Home() {
                   >
                     BOOK YOUR TICKETS NOW!!
                   </p>
-
                   <button
                     style={{
                       padding: "10px 20px",
@@ -848,7 +845,6 @@ export default function Home() {
                 </div>
               </div>
             ))}
-
           </div>
 
           <button
@@ -894,20 +890,69 @@ export default function Home() {
           </div>
         </div>
 
-        {/* SUBSCRIBE */}
-        <div
-          className="container mt-3"
-          style={{
-            padding: "20px",
-            borderRadius: "10px",
-            textAlign: "center",
-            backgroundColor: "#fff5f8",
-            boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
-          }}
-        >
-          <h2>Stay Updated With New Events</h2>
-          <p>Never miss an exciting college event again!</p>
+        {/* ACCORDION */}
+        <div className="flex-container" style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
+          <div className="container mt-3" style={{ backgroundColor: "pink", padding: 20, margin: 20, borderRadius: 10, width: "60%" }}>
+            <div id="accordion">
+              <div className="card">
+                <div className="card-header">
+                  <a className="btn" data-bs-toggle="collapse" href="#collapseOne">
+                    How do I buy a ticket for an event?
+                  </a>
+                </div>
+                <div id="collapseOne" className="collapse show" data-bs-parent="#accordion">
+                  <div className="card-body">
+                    Browse the Events page, choose the event you want, select the ticket type and quantity, then click <strong>Buy</strong>.
+                  </div>
+                </div>
+              </div>
 
+              <div className="card">
+                <div className="card-header">
+                  <a className="collapsed btn" data-bs-toggle="collapse" href="#collapseTwo">
+                    What payment methods do you accept?
+                  </a>
+                </div>
+                <div id="collapseTwo" className="collapse" data-bs-parent="#accordion">
+                  <div className="card-body">
+                    We accept cards, UPI, net banking and wallets.
+                  </div>
+                </div>
+              </div>
+
+              <div className="card">
+                <div className="card-header">
+                  <a className="collapsed btn" data-bs-toggle="collapse" href="#collapseThree">
+                    Can I get a refund or transfer my ticket?
+                  </a>
+                </div>
+                <div id="collapseThree" className="collapse" data-bs-parent="#accordion">
+                  <div className="card-body">
+                    <strong>No, tickets are non-refundable.</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* CLUBS */}
+        <div className="container mt-3 text-center">
+          <h2>Featured Clubs & Organizers</h2>
+          <div style={{ display: "flex", justifyContent: "center", gap: 20, flexWrap: "wrap" }}>
+            {[code, dance, drama, music, art, sports].map((img, i) => (
+              <div key={i} style={{ width: 220, backgroundColor: "#fff", borderRadius: 10, padding: 20, boxShadow: "0 4px 10px rgba(0,0,0,0.1)" }}>
+                <img src={img} alt="Club" style={{ width: 80, height: 80, borderRadius: "50%", objectFit: "cover", marginBottom: 10 }} />
+                <h4>Club</h4>
+                <p style={{ fontSize: "0.9rem", color: "#555" }}>Campus community</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* SUBSCRIBE */}
+        <div className="container mt-3 text-center" style={{ backgroundColor: "#fff5f8", padding: 20, borderRadius: 10 }}>
+          <h2>Stay Updated With New Events</h2>
           <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
             <input
               type="email"
@@ -916,27 +961,14 @@ export default function Home() {
               onChange={(e) => setSubscriberEmail(e.target.value)}
               style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #ddd", width: 260 }}
             />
-
             <button
               onClick={handleSubscribe}
               disabled={subLoading}
-              style={{
-                padding: "10px 20px",
-                borderRadius: 8,
-                border: "none",
-                backgroundColor: "#ff6b6b",
-                color: "white",
-                fontWeight: "bold",
-                cursor: subLoading ? "not-allowed" : "pointer",
-              }}
+              style={{ padding: "10px 20px", borderRadius: 8, border: "none", backgroundColor: "#ff6b6b", color: "white", fontWeight: "bold" }}
             >
               {subLoading ? "Subscribing..." : "Subscribe"}
             </button>
           </div>
-
-          <p style={{ marginTop: 10, fontSize: "0.9rem", color: "#777" }}>
-            We only send event updates. No spam.
-          </p>
         </div>
 
       </div>
