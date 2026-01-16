@@ -727,154 +727,79 @@
 //     </Layout>
 //   );
 // }
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../components/Layouts/Layout";
-import event1 from "../assets/image/event1.png";
-import event2 from "../assets/image/event2.png";
-import event3 from "../assets/image/event3.png";
-import event4 from "../assets/image/event4.png";
-import drama from "../assets/image/drama.png";
-import sports from "../assets/image/sports.png";
-import dance from "../assets/image/dance.png";
-import art from "../assets/image/art.png";
-import music from "../assets/image/music.png";
-import code from "../assets/image/code.png";
+import axios from "axios";
 import toast from "react-hot-toast";
 
-export default function Home() {
-  const [subscriberEmail, setSubscriberEmail] = useState("");
-  const [subLoading, setSubLoading] = useState(false);
+const Events = () => {
+  const [events, setEvents] = useState([]);
 
-  const handleSubscribe = async () => {
-    const email = subscriberEmail.trim();
-    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-      toast.error("Please enter a valid email.");
-      return;
-    }
-
-    setSubLoading(true);
+  const getAllEvents = async () => {
     try {
-      const resp = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/subscribe`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        }
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/v1/event/event-list/1`
       );
-
-      const text = await resp.text();
-      const data = text ? JSON.parse(text) : null;
-
-      if (resp.ok) {
-        toast.success(data?.message || "Subscribed successfully!");
-        setSubscriberEmail("");
-      } else {
-        toast.error(data?.message || "Subscription failed");
+      if (data?.success) {
+        setEvents(data.events);
       }
-    } catch (err) {
-      console.error("Subscribe error:", err);
-      toast.error("Network error. Try again later.");
-    } finally {
-      setSubLoading(false);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load events");
     }
   };
 
-  return (
-    <Layout title="CampusConnect — Home">
-      <div className="main">
+  useEffect(() => {
+    getAllEvents();
+  }, []);
 
-        {/* 🎞️ CAROUSEL */}
-        <div
-          id="demo"
-          className="carousel slide"
-          data-bs-ride="carousel"
-          style={{ maxWidth: "90%", margin: "20px auto" }}
-        >
-          <div className="carousel-inner">
-            {[event1, event2, event3, event4].map((img, i) => (
-              <div key={i} className={`carousel-item ${i === 0 ? "active" : ""}`}>
+  return (
+    <Layout title="All Events">
+      <div className="container mt-4">
+        <h2 className="text-center mb-4">All Events</h2>
+
+        <div className="row g-4">
+          {events.map((e) => (
+            <div key={e._id} className="col-12 col-md-6 col-lg-4">
+              <div className="card h-100 shadow-sm border-0">
+
+                {/* IMAGE */}
                 <img
-                  src={img}
-                  alt="Event"
+                  src={`${import.meta.env.VITE_BACKEND_URL}/api/v1/event/event-photo/${e._id}`}
+                  alt={e.name}
+                  className="card-img-top"
                   style={{
-                    width: "100%",
-                    height: "500px",
+                    height: "220px",
                     objectFit: "cover",
-                    filter: "brightness(70%)",
-                    borderRadius: "12px",
                   }}
                 />
-                <div className="carousel-caption text-center">
-                  <p style={{ fontSize: "1.2rem", fontWeight: 500 }}>
-                    BOOK YOUR TICKETS NOW!!
+
+                {/* BODY */}
+                <div className="card-body d-flex flex-column">
+                  <h5 className="card-title">{e.name}</h5>
+
+                  <p className="card-text text-muted">
+                    {e.description?.substring(0, 80)}...
                   </p>
-                  <button
-                    style={{
-                      padding: "10px 20px",
-                      backgroundColor: "#ff6b6b",
-                      border: "none",
-                      borderRadius: "8px",
-                      color: "white",
-                      marginTop: "10px",
-                    }}
-                    onClick={() => (window.location.href = "/events")}
-                  >
-                    More
-                  </button>
+
+                  {/* BUTTONS FIXED AT BOTTOM */}
+                  <div className="mt-auto d-flex gap-2">
+                    <button className="btn btn-danger btn-sm w-50">
+                      More Details
+                    </button>
+                    <button className="btn btn-outline-danger btn-sm w-50">
+                      Add to Cart
+                    </button>
+                  </div>
                 </div>
+
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 📬 SUBSCRIBE */}
-        <div
-          className="container mt-3"
-          style={{
-            padding: "20px",
-            borderRadius: "10px",
-            textAlign: "center",
-            backgroundColor: "#fff5f8",
-          }}
-        >
-          <h2>Stay Updated With New Events</h2>
-          <p>Subscribe to get notified about upcoming campus events.</p>
-
-          <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={subscriberEmail}
-              onChange={(e) => setSubscriberEmail(e.target.value)}
-              style={{
-                padding: "10px",
-                borderRadius: "8px",
-                border: "1px solid #ddd",
-                width: "260px",
-              }}
-            />
-            <button
-              onClick={handleSubscribe}
-              disabled={subLoading}
-              style={{
-                padding: "10px 20px",
-                borderRadius: "8px",
-                border: "none",
-                backgroundColor: "#ff6b6b",
-                color: "white",
-                fontWeight: "bold",
-              }}
-            >
-              {subLoading ? "Subscribing..." : "Subscribe"}
-            </button>
-          </div>
-
-          <p style={{ marginTop: "10px", fontSize: "0.9rem" }}>
-            No spam. Only event updates.
-          </p>
+            </div>
+          ))}
         </div>
       </div>
     </Layout>
   );
-}
+};
+
+export default Events;
