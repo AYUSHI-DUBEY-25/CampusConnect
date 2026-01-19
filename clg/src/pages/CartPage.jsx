@@ -406,7 +406,6 @@ import toast from "react-hot-toast";
 function CartPage() {
   const { auth } = useAuth();
   const { cart, setCart } = useCart();
-
   const [clientToken, setClientToken] = useState("");
   const [loading, setLoading] = useState(false);
   const [dropInReady, setDropInReady] = useState(false);
@@ -416,7 +415,11 @@ function CartPage() {
   const dropinContainerRef = useRef(null);
   const navigate = useNavigate();
 
-  // ================= TOTAL PRICE =================
+  const BACKEND = import.meta.env.VITE_BACKEND_URL;
+
+  // -------------------------
+  // TOTAL PRICE (considers quantity)
+  // -------------------------
   const totalPrice = () => {
     let total = 0;
     cart?.forEach((item) => {
@@ -429,71 +432,97 @@ function CartPage() {
     });
   };
 
+  // helper: user-specific storage key
   const storageKey = auth?.user?._id ? `cart_${auth.user._id}` : "cart";
 
-  // ================= REMOVE ITEM =================
+  // -------------------------
+  // REMOVE ITEM
+  // -------------------------
   const removeCartItem = (pid) => {
-    const myCart = [...(cart || [])].filter((item) => item._id !== pid);
-    setCart(myCart);
-    localStorage.setItem(storageKey, JSON.stringify(myCart));
+    const myCart = Array.isArray(cart) ? [...cart] : [];
+    const index = myCart.findIndex((item) => item._id === pid);
+    if (index > -1) {
+      myCart.splice(index, 1);
+      setCart(myCart);
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(myCart));
+      } catch (e) {
+        console.warn("Failed to write cart to localStorage", e);
+      }
+    }
   };
 
-  // ================= QTY =================
+  // -------------------------
+  // INCREASE / DECREASE qty
+  // -------------------------
   const increaseQty = (pid) => {
     setCart((prev) => {
-      const next = prev.map((item) => {
+      const next = (prev ?? []).map((item) => {
         if (item._id !== pid) return item;
         const max = Number(item.maxTickets ?? item.ticketsAvailable ?? Infinity);
         const cur = Number(item.quantity ?? 1);
         if (cur >= max) {
           toast(`Max ${max} tickets allowed for "${item.name}"`);
-          return item;
+          return { ...item, quantity: cur };
         }
         return { ...item, quantity: cur + 1 };
       });
-      localStorage.setItem(storageKey, JSON.stringify(next));
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(next));
+      } catch (e) {}
       return next;
     });
   };
 
   const decreaseQty = (pid) => {
     setCart((prev) => {
-      let next = prev.map((item) => {
+      let next = (prev ?? []).map((item) => {
         if (item._id !== pid) return item;
-        return { ...item, quantity: Math.max((item.quantity ?? 1) - 1, 0) };
+        const cur = Number(item.quantity ?? 1);
+        const newQty = Math.max(cur - 1, 0);
+        return { ...item, quantity: newQty };
       });
-      next = next.filter((i) => i.quantity > 0);
-      localStorage.setItem(storageKey, JSON.stringify(next));
+      next = next.filter((item) => Number(item.quantity ?? 1) > 0);
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(next));
+      } catch (e) {}
       return next;
     });
   };
 
-  // ================= BRAINTREE TOKEN =================
+  // -------------------------
+  // GET BRAINTREE TOKEN
+  // -------------------------
   const getToken = async () => {
     try {
       const { data } = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/v1/event/braintree/token`,
-        { headers: { Authorization: `Bearer ${auth.token}` } }
+        `${BACKEND}/api/v1/event/braintree/token`
       );
       setClientToken(data.clientToken);
     } catch (error) {
-      console.log(error);
+      console.log("Token error:", error);
       toast.error("Failed to load payment system");
     }
   };
 
-  // ================= LOAD SDK =================
+  // -------------------------
+  // LOAD BRAINTREE SDK
+  // -------------------------
   useEffect(() => {
     if (window.braintree) {
       setBraintreeLoaded(true);
       return;
     }
+
     const script = document.createElement("script");
     script.src =
       "https://js.braintreegateway.com/web/dropin/1.33.4/js/dropin.min.js";
     script.async = true;
-    script.onload = () => setBraintreeLoaded(true);
+    script.onload = () => {
+      setBraintreeLoaded(true);
+    };
     script.onerror = () => toast.error("Failed to load payment UI");
+
     document.head.appendChild(script);
   }, []);
 
@@ -501,16 +530,35 @@ function CartPage() {
     if (auth?.token) getToken();
   }, [auth?.token]);
 
-  // ================= INIT DROPIN =================
+  // -------------------------
+  // INITIALIZE DROP-IN
+  // -------------------------
   useEffect(() => {
-    if (!braintreeLoaded || !clientToken || !cart?.length || !auth?.token)
+    if (!braintreeLoaded || !clientToken || !cart?.length || !auth?.token) {
       return;
+    }
 
-    const init = async () => {
-      if (dropinInstanceRef.current) {
-        await dropinInstanceRef.current.teardown();
-        dropinInstanceRef.current = null;
-      }
+    initializeDropIn();
+
+    return () => {
+      cleanupDropIn();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [braintreeLoaded, clientToken, cart?.length, auth?.token]);
+
+  const cleanupDropIn = () => {
+    if (dropinInstanceRef.current) {
+      dropinInstanceRef.current.teardown().catch(() => {});
+      dropinInstanceRef.current = null;
+    }
+    if (dropinContainerRef.current) {
+      dropinContainerRef.current.innerHTML = "";
+    }
+  };
+
+  const initializeDropIn = async () => {
+    try {
+      cleanupDropIn();
 
       const instance = await window.braintree.dropin.create({
         authorization: clientToken,
@@ -523,66 +571,65 @@ function CartPage() {
 
       dropinInstanceRef.current = instance;
       setDropInReady(true);
-    };
-
-    init();
-  }, [braintreeLoaded, clientToken, cart?.length, auth?.token]);
-
-  // ================= CREATE ORDER =================
-  const createOrderOnServer = async (cartItems, paymentResult) => {
-    const payloadCart = cartItems.map((c) => ({
-      eventId: c._id,
-      qty: Number(c.quantity ?? 1),
-      name: c.name,
-      price: c.price,
-    }));
-
-    const { data } = await axios.post(
-      `${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/create-order`,
-      { cart: payloadCart, paymentResult },
-      { headers: { Authorization: `Bearer ${auth.token}` } }
-    );
-
-    return data;
+    } catch (error) {
+      console.error("Braintree initialization error:", error);
+      setDropInReady(false);
+    }
   };
 
-  // ================= HANDLE PAYMENT =================
+  // -------------------------
+  // HANDLE PAYMENT
+  // -------------------------
   const handlePayment = async () => {
-    if (!dropinInstanceRef.current) return toast.error("Payment UI not ready");
+    if (!dropinInstanceRef.current) {
+      toast.error("Payment UI not ready yet.");
+      return;
+    }
+
+    if (!auth?.token) {
+      toast.error("Please login to complete payment");
+      return;
+    }
+
+    if (!cart?.length) {
+      toast.error("Cart is empty");
+      return;
+    }
 
     try {
       setLoading(true);
 
-      const { nonce } =
+      const payload =
         await dropinInstanceRef.current.requestPaymentMethod();
 
-      const minimalCart = cart.map((item) => ({
-        _id: item._id,
-        price: item.price,
-        quantity: item.quantity ?? 1,
-      }));
-
-      const { data } = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/v1/event/braintree/payment`,
-        { nonce, cart: minimalCart },
-        { headers: { Authorization: `Bearer ${auth.token}` } }
+      const paymentResp = await axios.post(
+        `${BACKEND}/api/v1/event/braintree/payment`,
+        {
+          nonce: payload.nonce,
+          cart,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${auth?.token}`,
+          },
+        }
       );
 
-      if (!data?.success) return toast.error("Payment failed");
-
-      const orderRes = await createOrderOnServer(cart, data);
-
-      if (orderRes?.success) {
-        localStorage.removeItem(storageKey);
-        setCart([]);
-        toast.success("Payment successful & tickets booked!");
-        navigate("/dashboard/user/orders");
-      } else {
-        toast.error("Order creation failed after payment");
+      if (!paymentResp?.data?.success) {
+        toast.error(paymentResp?.data?.message || "Payment failed");
+        return;
       }
-    } catch (err) {
-      console.log(err);
-      toast.error("Payment failed");
+
+      try {
+        localStorage.removeItem(storageKey);
+      } catch (e) {}
+
+      setCart([]);
+      toast.success("Payment successful!");
+      navigate("/dashboard/user/orders");
+    } catch (error) {
+      console.log("Payment error:", error);
+      toast.error("Payment processing failed");
     } finally {
       setLoading(false);
     }
@@ -590,62 +637,114 @@ function CartPage() {
 
   return (
     <Layout>
-      <div className="container-fluid p-5">
-        <div className="row">
-          {/* CART */}
-          <div className="col-md-6">
-            {cart?.map((p) => (
-              <div key={p._id} className="card flex-row my-2 p-2">
-                <img
-                  src={`${import.meta.env.VITE_BACKEND_URL}/api/v1/event/event-photo/${p._id}`}
-                  alt={p.name}
-                  height="150"
-                  className="rounded"
-                />
-                <div className="ms-3 flex-grow-1">
-                  <h5>{p.name}</h5>
-                  <p>₹{p.price}</p>
+      <div className="cart-page bg-white" style={{ minHeight: "70vh" }}>
+        <div className="row p-2">
+          <div className="col-md-12">
+            <h1 className="text-center bg-light p-2 mb-1">
+              {auth?.user ? `Hello ${auth?.user?.name}` : "Hello Guest"}
+            </h1>
+            <p className="text-center fs-2">
+              {cart?.length
+                ? `You have ${cart.length} items`
+                : "Your cart is empty"}
+            </p>
+          </div>
+        </div>
 
-                  <div className="d-flex align-items-center gap-2">
-                    <button onClick={() => decreaseQty(p._id)}>-</button>
-                    <span>{p.quantity ?? 1}</span>
-                    <button onClick={() => increaseQty(p._id)}>+</button>
+        <div className="container-fluid p-5">
+          <div className="row">
+            <div className="col-md-6">
+              {cart?.map((p) => (
+                <div className="row card flex-row my-2 p-1" key={p._id}>
+                  <div className="col-md-4">
+                    <img
+                      src={`${BACKEND}/api/v1/event/event-photo/${p._id}`}
+                      className="card-img-top rounded-2"
+                      alt={p.name}
+                      height="150"
+                    />
                   </div>
+                  <div className="col-md-4">
+                    <p className="fs-4 fw-bold">{p.name}</p>
+                    <p>{p.description?.substring(0, 50)}</p>
+                    <p>Price: {p.price}</p>
+                  </div>
+                  <div className="col-md-4 d-flex flex-column align-items-end justify-content-center">
+                    <div className="d-flex align-items-center mb-2">
+                      <button
+                        className="btn btn-outline-secondary me-2"
+                        onClick={() => decreaseQty(p._id)}
+                      >
+                        −
+                      </button>
+
+                      <div style={{ minWidth: 36, textAlign: "center" }}>
+                        {p.quantity ?? 1}
+                      </div>
+
+                      <button
+                        className="btn btn-outline-secondary ms-2"
+                        onClick={() => increaseQty(p._id)}
+                      >
+                        +
+                      </button>
+                    </div>
+
+                    <button
+                      className="btn btn-danger"
+                      onClick={() => removeCartItem(p._id)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="col-md-6 cart-summary shadow rounded-3 p-4">
+              <h2>Cart Summary</h2>
+              <p>Total: {totalPrice()}</p>
+
+              <div className="mb-3">
+                <h4>Address</h4>
+                <p>{auth?.user?.address || "No address saved"}</p>
+                <button
+                  className="btn btn-outline-warning"
+                  onClick={() => navigate("/dashboard/user/profile")}
+                >
+                  Update Address
+                </button>
+              </div>
+
+              <hr />
+
+              {clientToken && auth?.token && cart?.length ? (
+                <>
+                  <div
+                    ref={dropinContainerRef}
+                    id="dropin-container"
+                    style={{
+                      minHeight: "150px",
+                      border: "1px solid #ddd",
+                      borderRadius: "4px",
+                      padding: "15px",
+                    }}
+                  />
 
                   <button
-                    className="btn btn-danger mt-2"
-                    onClick={() => removeCartItem(p._id)}
+                    className="btn btn-primary mt-3 w-100"
+                    onClick={handlePayment}
+                    disabled={loading || !dropInReady}
                   >
-                    Remove
+                    {loading ? "Processing..." : "Make Payment"}
                   </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* SUMMARY */}
-          <div className="col-md-6 shadow p-4 rounded">
-            <h2>Cart Summary</h2>
-            <p>Total: {totalPrice()}</p>
-
-            <p>
-              <b>Address:</b> {auth?.user?.address || "No address saved"}
-            </p>
-
-            {clientToken && cart?.length ? (
-              <>
-                <div ref={dropinContainerRef} />
-                <button
-                  className="btn btn-primary w-100 mt-3"
-                  disabled={loading || !dropInReady}
-                  onClick={handlePayment}
-                >
-                  {loading ? "Processing..." : "Make Payment"}
-                </button>
-              </>
-            ) : (
-              <p>Loading payment system...</p>
-            )}
+                </>
+              ) : (
+                <p className="text-warning mt-3">
+                  Payment system loading...
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
