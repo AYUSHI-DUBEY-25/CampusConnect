@@ -8,23 +8,25 @@ const AuthProvider = ({ children }) => {
     user: null,
     token: "",
   });
-
-  // FIX: Always send Bearer token
   axios.defaults.headers.common["Authorization"] =
-    auth?.token ? `Bearer ${auth.token}` : "";
+  auth?.token ? `Bearer ${auth.token}` : "";
 
-  useEffect(() => {
-    const data = localStorage.getItem("auth");
-    if (data) {
-      const parseData = JSON.parse(data);
 
-      // FIX: Do NOT spread old auth
-      setAuth({
-        user: parseData.user,
-        token: parseData.token,
-      });
-    }
-  }, []);
+ useEffect(() => {
+  const data = localStorage.getItem("auth");
+  if (data) {
+    const parseData = JSON.parse(data);
+
+    setAuth({
+      user: parseData.user,
+      token: parseData.token,
+    });
+    axios.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${parseData.token}`;
+  }
+}, []);
+
 
   return (
     <AuthContext.Provider value={{ auth, setAuth }}>
