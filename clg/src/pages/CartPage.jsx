@@ -294,7 +294,9 @@ function CartPage() {
                 // Optional: if you want to refund on failure, add server-side refund flow (not implemented here)
             }
         } catch (error) {
-            console.log("Payment error:", error?.response?.data ?? error.message ?? error);
+            console.log("Payment error status:", error?.response?.status);
+console.log("Payment error data:", error?.response?.data);
+
             toast.error("Payment processing failed");
         } finally {
             setLoading(false);
