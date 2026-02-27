@@ -245,7 +245,7 @@ function CartPage() {
                 price: item.price,
                 quantity: item.quantity ?? 1,
             }));
-
+            const storedAuth = JSON.parse(localStorage.getItem("auth"));
             // 2) submit nonce to your payment processing endpoint
             const paymentResp = await axios.post(
   `${API}/api/v1/event/braintree/payment`,
@@ -255,7 +255,7 @@ function CartPage() {
   },
   {
     headers: {
-      Authorization: `Bearer ${auth?.token}`,
+      Authorization: `Bearer ${storedAuth?.token}`,
     },
   }
 );
@@ -294,7 +294,8 @@ function CartPage() {
                 // Optional: if you want to refund on failure, add server-side refund flow (not implemented here)
             }
         } catch (error) {
-            console.log("Payment error status:", error?.response?.status);
+            // console.log("Payment error status:", error?.response?.status);
+            console.log("FULL ERROR:", error?.response);
 console.log("Payment error data:", error?.response?.data);
 
             toast.error("Payment processing failed");
