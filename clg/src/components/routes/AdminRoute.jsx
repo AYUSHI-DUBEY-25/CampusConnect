@@ -34,14 +34,7 @@ export default function AdminRoute() {
 
   useEffect(() => {
     const authCheck = async () => {
-      const res = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/admin-auth`,
-        {
-          headers: {
-            Authorization: auth?.token,
-          },
-        }
-      );
+      const res = await axios.get("/api/v1/auth/admin-auth");
 
       if (res.data.ok) {
         setOk(true);
