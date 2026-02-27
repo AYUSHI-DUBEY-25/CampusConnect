@@ -9,6 +9,8 @@ import { CartProvider } from './context/cart.jsx'
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
+axios.defaults.baseURL = import.meta.env.VITE_API;
+
 const authData = localStorage.getItem("auth");
 if (authData) {
   const parsed = JSON.parse(authData);
