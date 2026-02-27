@@ -217,38 +217,33 @@ const Profile = () => {
   }, [auth?.user]);
 
   // ==================== UPDATE PROFILE ====================
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const { data } = await axios.put(
-        `${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/profile`,
-        { name, email, password, phone, address },
-        {
-          headers: {
-            Authorization: auth?.token,
-          },
-        }
-      );
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const { data } = await axios.put(
+      "/api/v1/auth/profile",
+      { name, email, password, phone, address }
+    );
 
-      if (data?.error) {
-        toast.error(data.error);
-      } else {
-        // Update context
-        setAuth({ ...auth, user: data.updatedUser });
+    if (data?.error) {
+      toast.error(data.error);
+    } else {
+      // Update context
+      setAuth({ ...auth, user: data.updatedUser });
 
-        // Update localStorage
-        const ls = JSON.parse(localStorage.getItem("auth"));
-        ls.user = data.updatedUser;
-        localStorage.setItem("auth", JSON.stringify(ls));
+      // Update localStorage
+      const ls = JSON.parse(localStorage.getItem("auth"));
+      ls.user = data.updatedUser;
+      localStorage.setItem("auth", JSON.stringify(ls));
 
-        toast.success("Profile Updated Successfully");
-        navigate("/dashboard/user");
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
+      toast.success("Profile Updated Successfully");
+      navigate("/dashboard/user");
     }
-  };
+  } catch (error) {
+    console.log(error);
+    toast.error("Something went wrong");
+  }
+};
 
   return (
     <Layout title="Your Profile">
