@@ -70,9 +70,7 @@ const Products = () => {
   // get all events
   const getAllProducts = async () => {
     try {
-      const { data } = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/v1/event/get-event`
-      );
+      const { data } = await axios.get("/api/v1/event/get-event");
       setProducts(data.events);
     } catch (error) {
       console.log(error);

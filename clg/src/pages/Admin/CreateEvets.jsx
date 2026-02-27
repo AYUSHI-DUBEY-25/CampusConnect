@@ -179,59 +179,53 @@ const CreateEvents = () => {
   const [image, setImage] = useState(null);
 
   // ==================== GET ALL CATEGORIES ====================
-  const getAllCategories = async () => {
-    try {
-      const { data } = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/v1/category/get-category`
-      );
+  // ==================== GET ALL CATEGORIES ====================
+const getAllCategories = async () => {
+  try {
+    const { data } = await axios.get("/api/v1/category/get-category");
 
-      if (data?.success) {
-        setCategories(data.category);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong while fetching categories");
+    if (data?.success) {
+      setCategories(data.category);
     }
-  };
+  } catch (error) {
+    console.log(error);
+    toast.error("Something went wrong while fetching categories");
+  }
+};
 
-  useEffect(() => {
-    getAllCategories();
-  }, []);
+useEffect(() => {
+  getAllCategories();
+}, []);
 
-  // ==================== CREATE EVENT ====================
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    try {
-      const eventData = new FormData();
-      eventData.append("name", name);
-      eventData.append("price", price);
-      eventData.append("description", description);
-      eventData.append("date", date);
-      eventData.append("category", category);
-      eventData.append("photo", image);
 
-      const { data } = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/v1/event/create-event`,
-        eventData,
-        {
-          headers: {
-            Authorization: auth?.token,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+// ==================== CREATE EVENT ====================
+const handleCreate = async (e) => {
+  e.preventDefault();
+  try {
+    const eventData = new FormData();
+    eventData.append("name", name);
+    eventData.append("price", price);
+    eventData.append("description", description);
+    eventData.append("date", date);
+    eventData.append("category", category);
+    eventData.append("photo", image);
 
-      if (data?.success) {
-        toast.success("Event Created Successfully");
-        navigate("/dashboard/admin/events");
-      } else {
-        toast.error(data.message);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong while creating event");
+    const { data } = await axios.post(
+      "/api/v1/event/create-event",
+      eventData
+    );
+
+    if (data?.success) {
+      toast.success("Event Created Successfully");
+      navigate("/dashboard/admin/events");
+    } else {
+      toast.error(data.message);
     }
-  };
+  } catch (error) {
+    console.log(error);
+    toast.error("Something went wrong while creating event");
+  }
+};
 
   return (
     <Layout title={"Create Events - Admin"}>

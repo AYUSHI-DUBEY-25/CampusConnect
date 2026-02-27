@@ -220,119 +220,108 @@ const UpdateEvents = () => {
   const [ticketsAvailable, setTicketsAvailable] = useState(0);
 
   // ==================== GET SINGLE EVENT ====================
-  const getSingleEvent = async () => {
-    try {
-      const { data } = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/v1/event/get-event/${params.slug}`
-      );
+const getSingleEvent = async () => {
+  try {
+    const { data } = await axios.get(
+      `/api/v1/event/get-event/${params.slug}`
+    );
 
-      const eventData = data.event;
+    const eventData = data.event;
 
-      setId(eventData._id);
-      setName(eventData.name);
-      setDescription(eventData.description);
-      setPrice(eventData.price);
-      setCategory(eventData.category?._id || "");
-      setTicketsAvailable(eventData.ticketsAvailable ?? 0);
+    setId(eventData._id);
+    setName(eventData.name);
+    setDescription(eventData.description);
+    setPrice(eventData.price);
+    setCategory(eventData.category?._id || "");
+    setTicketsAvailable(eventData.ticketsAvailable ?? 0);
 
-      if (eventData.date) {
-        const formattedDate = new Date(eventData.date)
-          .toISOString()
-          .split("T")[0];
-        setDate(formattedDate);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong while fetching event details");
+    if (eventData.date) {
+      const formattedDate = new Date(eventData.date)
+        .toISOString()
+        .split("T")[0];
+      setDate(formattedDate);
     }
-  };
+  } catch (error) {
+    console.log(error);
+    toast.error("Something went wrong while fetching event details");
+  }
+};
 
-  useEffect(() => {
-    getSingleEvent();
-  }, []);
+useEffect(() => {
+  getSingleEvent();
+}, []);
 
-  // ==================== GET ALL CATEGORIES ====================
-  const getAllCategory = async () => {
-    try {
-      const { data } = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/v1/category/get-category`
-      );
-      if (data?.success) {
-        setCategories(data.category);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong while fetching categories");
+
+// ==================== GET ALL CATEGORIES ====================
+const getAllCategory = async () => {
+  try {
+    const { data } = await axios.get("/api/v1/category/get-category");
+
+    if (data?.success) {
+      setCategories(data.category);
     }
-  };
+  } catch (error) {
+    console.log(error);
+    toast.error("Something went wrong while fetching categories");
+  }
+};
 
-  useEffect(() => {
-    getAllCategory();
-  }, []);
+useEffect(() => {
+  getAllCategory();
+}, []);
 
-  // ==================== UPDATE EVENT ====================
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    try {
-      const eventData = new FormData();
-      eventData.append("name", name);
-      eventData.append("description", description);
-      eventData.append("date", date);
-      eventData.append("price", price);
-      eventData.append("category", category);
-      eventData.append("ticketsAvailable", ticketsAvailable);
 
-      if (photo) {
-        eventData.append("photo", photo);
-      }
+// ==================== UPDATE EVENT ====================
+const handleUpdate = async (e) => {
+  e.preventDefault();
+  try {
+    const eventData = new FormData();
+    eventData.append("name", name);
+    eventData.append("description", description);
+    eventData.append("date", date);
+    eventData.append("price", price);
+    eventData.append("category", category);
+    eventData.append("ticketsAvailable", ticketsAvailable);
 
-      const { data } = await axios.put(
-        `${import.meta.env.VITE_BACKEND_URL}/api/v1/event/update-event/${id}`,
-        eventData,
-        {
-          headers: {
-            Authorization: auth?.token,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      if (data?.success) {
-        toast.success(data.message);
-        navigate("/dashboard/admin/events");
-      } else {
-        toast.error(data.message);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong while updating event");
+    if (photo) {
+      eventData.append("photo", photo);
     }
-  };
 
-  // ==================== DELETE EVENT ====================
-  const handleDelete = async () => {
-    try {
-      const confirmed = window.confirm(
-        "Are you sure you want to delete this event?"
-      );
-      if (!confirmed) return;
+    const { data } = await axios.put(
+      `/api/v1/event/update-event/${id}`,
+      eventData
+    );
 
-      await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}/api/v1/event/delete-event/${id}`,
-        {
-          headers: {
-            Authorization: auth?.token,
-          },
-        }
-      );
-
-      toast.success("Event deleted successfully");
+    if (data?.success) {
+      toast.success(data.message);
       navigate("/dashboard/admin/events");
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong while deleting event");
+    } else {
+      toast.error(data.message);
     }
-  };
+  } catch (error) {
+    console.log(error);
+    toast.error("Something went wrong while updating event");
+  }
+};
+
+
+// ==================== DELETE EVENT ====================
+const handleDelete = async () => {
+  try {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this event?"
+    );
+    if (!confirmed) return;
+
+    await axios.delete(`/api/v1/event/delete-event/${id}`);
+
+    toast.success("Event deleted successfully");
+    navigate("/dashboard/admin/events");
+  } catch (error) {
+    console.log(error);
+    toast.error("Something went wrong while deleting event");
+  }
+};
 
   return (
     <Layout title={"Dashboard - Update Event"}>
