@@ -130,7 +130,8 @@ const Login = () => {
           user: data.user,
           token: data.token,
         });
-
+        axios.defaults.headers.common["Authorization"] =
+  `Bearer ${data.token}`;
         localStorage.setItem("auth", JSON.stringify(data));
 
         navigate(location.state || "/");
