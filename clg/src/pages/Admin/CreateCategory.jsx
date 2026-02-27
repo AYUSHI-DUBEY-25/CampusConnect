@@ -166,104 +166,91 @@ const CreateCategory = () => {
   const [updatedName, setUpdatedName] = useState("");
 
   // ==================== GET ALL CATEGORIES ====================
-  const getAllCategories = async () => {
-    try {
-      const { data } = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/v1/category/get-category`
-      );
+  // ==================== GET ALL CATEGORIES ====================
+const getAllCategories = async () => {
+  try {
+    const { data } = await axios.get("/api/v1/category/get-category");
 
-      if (data?.success) {
-        setCategories(data.category);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong while fetching categories");
+    if (data?.success) {
+      setCategories(data.category);
     }
-  };
+  } catch (error) {
+    console.log(error);
+    toast.error("Something went wrong while fetching categories");
+  }
+};
 
-  useEffect(() => {
-    getAllCategories();
-  }, []);
+useEffect(() => {
+  getAllCategories();
+}, []);
 
-  // ==================== CREATE CATEGORY ====================
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const { data } = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/v1/category/create-category`,
-        { name },
-        {
-          headers: {
-            Authorization: auth?.token,
-          },
-        }
-      );
 
-      if (data?.success) {
-        toast.success(`${name} is created`);
-        setName("");
-        getAllCategories();
-      } else {
-        toast.error(data.message);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong in input form");
+// ==================== CREATE CATEGORY ====================
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const { data } = await axios.post(
+      "/api/v1/category/create-category",
+      { name }
+    );
+
+    if (data?.success) {
+      toast.success(`${name} is created`);
+      setName("");
+      getAllCategories();
+    } else {
+      toast.error(data.message);
     }
-  };
+  } catch (error) {
+    console.log(error);
+    toast.error("Something went wrong in input form");
+  }
+};
 
-  // ==================== UPDATE CATEGORY ====================
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    try {
-      const { data } = await axios.put(
-        `${import.meta.env.VITE_BACKEND_URL}/api/v1/category/update-category/${selected._id}`,
-        { name: updatedName },
-        {
-          headers: {
-            Authorization: auth?.token,
-          },
-        }
-      );
 
-      if (data?.success) {
-        toast.success(`${updatedName} is updated`);
-        setSelected(null);
-        setUpdatedName("");
-        setVisible(false);
-        getAllCategories();
-      } else {
-        toast.error(data.message);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong while updating category");
+// ==================== UPDATE CATEGORY ====================
+const handleUpdate = async (e) => {
+  e.preventDefault();
+  try {
+    const { data } = await axios.put(
+      `/api/v1/category/update-category/${selected._id}`,
+      { name: updatedName }
+    );
+
+    if (data?.success) {
+      toast.success(`${updatedName} is updated`);
+      setSelected(null);
+      setUpdatedName("");
+      setVisible(false);
+      getAllCategories();
+    } else {
+      toast.error(data.message);
     }
-  };
+  } catch (error) {
+    console.log(error);
+    toast.error("Something went wrong while updating category");
+  }
+};
 
-  // ==================== DELETE CATEGORY ====================
-  const handleDelete = async (pId) => {
-    try {
-      const { data } = await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}/api/v1/category/delete-category/${pId}`,
-        {
-          headers: {
-            Authorization: auth?.token,
-          },
-        }
-      );
 
-      if (data?.success) {
-        toast.success("Category deleted successfully");
-        getAllCategories();
-      } else {
-        toast.error(data.message);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong while deleting category");
+// ==================== DELETE CATEGORY ====================
+const handleDelete = async (pId) => {
+  try {
+    const { data } = await axios.delete(
+      `/api/v1/category/delete-category/${pId}`
+    );
+
+    if (data?.success) {
+      toast.success("Category deleted successfully");
+      getAllCategories();
+    } else {
+      toast.error(data.message);
     }
-  };
+  } catch (error) {
+    console.log(error);
+    toast.error("Something went wrong while deleting category");
+  }
+};
 
   return (
     <Layout title={"Dashboard - Create Category"}>
