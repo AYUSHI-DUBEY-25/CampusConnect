@@ -14,7 +14,8 @@ axios.defaults.baseURL = import.meta.env.VITE_API;
 const authData = localStorage.getItem("auth");
 if (authData) {
   const parsed = JSON.parse(authData);
-  axios.defaults.headers.common["Authorization"] = `Bearer ${parsed.token}`;
+  axios.defaults.headers.common["Authorization"] =
+    `Bearer ${parsed.token}`;
 }
 
 createRoot(document.getElementById('root')).render(
