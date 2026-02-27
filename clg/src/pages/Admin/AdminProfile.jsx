@@ -15,36 +15,31 @@ export default function AdminProfile() {
 
   // ==================== HANDLE UPDATE ====================
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const { data } = await axios.put(
-  `${import.meta.env.VITE_BACKEND_URL}/api/v1/auth/profile`,
-  { name, email, phone, password },
-  {
-    headers: {
-      Authorization: auth?.token,
-    },
-  }
-);
+  e.preventDefault();
+  try {
+    const { data } = await axios.put(
+      "/api/v1/auth/profile",
+      { name, email, phone, password }
+    );
 
+    if (data?.success) {
+      toast.success("Profile Updated Successfully");
 
-      if (data?.success) {
-        toast.success("Profile Updated Successfully");
+      // Update auth context + localStorage
+      setAuth({ ...auth, user: data.updatedUser });
 
-        // Update auth context + localstorage
-        setAuth({ ...auth, user: data.updatedUser });
-        let ls = localStorage.getItem("auth");
-        ls = JSON.parse(ls);
-        ls.user = data.updatedUser;
-        localStorage.setItem("auth", JSON.stringify(ls));
-      } else {
-        toast.error(data.message);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
+      let ls = localStorage.getItem("auth");
+      ls = JSON.parse(ls);
+      ls.user = data.updatedUser;
+      localStorage.setItem("auth", JSON.stringify(ls));
+    } else {
+      toast.error(data.message);
     }
-  };
+  } catch (error) {
+    console.log(error);
+    toast.error("Something went wrong");
+  }
+};
 
   return (
     <Layout>
