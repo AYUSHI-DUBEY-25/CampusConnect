@@ -13,7 +13,7 @@ export default function AdminProfile() {
   const [phone, setPhone] = useState(auth?.user?.phone);
   const [password, setPassword] = useState("");
 
-  // ==================== HANDLE UPDATE ====================
+//handdle form submit
   const handleSubmit = async (e) => {
   e.preventDefault();
   try {

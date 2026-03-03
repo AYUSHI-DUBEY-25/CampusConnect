@@ -1,4 +1,3 @@
-// models/Subscriber.js
 const mongoose = require("mongoose");
 const crypto = require("crypto");
 
@@ -13,15 +12,15 @@ const SubscriberSchema = new mongoose.Schema(
       index: true,
     },
     source: {
-      type: String, // where user subscribed from (e.g., "home", "event_page", "modal")
+      type: String,
       default: "home",
     },
     verified: {
       type: Boolean,
-      default: false, // set true when user clicks confirmation link (optional)
+      default: false,
     },
     unsubscribeToken: {
-      type: String, // secure token for one-click unsubscribe links
+      type: String,
     },
     meta: {
       ip: String,
@@ -30,11 +29,8 @@ const SubscriberSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-// Pre-save: ensure an unsubscribe token exists
 SubscriberSchema.pre("save", function (next) {
   if (!this.unsubscribeToken) {
-    // 32 bytes hex -> 64 chars
     this.unsubscribeToken = crypto.randomBytes(32).toString("hex");
   }
   next();

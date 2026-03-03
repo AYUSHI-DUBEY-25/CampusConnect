@@ -18,7 +18,7 @@ const Header = () => {
       localStorage.removeItem(`cart_${userId}`);
     }
     localStorage.removeItem("auth");
-    localStorage.removeItem("cart"); // safe fallback
+    localStorage.removeItem("cart");
 
     setAuth({ user: null, token: "" });
     if (typeof setCart === "function") setCart([]);
@@ -35,12 +35,9 @@ const Header = () => {
   return (
     <nav className="navbar navbar-expand-lg custom-navbar shadow-sm">
       <div className="container-fluid px-4">
-        {/* Brand name / logo */}
         <Link className="navbar-brand fw-bold text-pink" to="/">
           <i className="bi bi-calendar-heart-fill me-2"></i> CampusConnect
         </Link>
-
-        {/* Toggle for mobile view */}
         <button
           className="navbar-toggler"
           type="button"
@@ -96,7 +93,6 @@ const Header = () => {
                     </NavLink>
                   </li>
                   <li>
-                    {/* use button or anchor that calls handleLogout */}
                     <button
                       onClick={handleLogout}
                       className="dropdown-item text-danger"

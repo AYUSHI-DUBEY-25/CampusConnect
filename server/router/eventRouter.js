@@ -4,7 +4,6 @@ import { isAdmin, requireSignIn } from "../middleware/authMiddleware.js";
 import formidable from "express-formidable";
 import { getAllOrdersController } from "../controller/authController.js";
 
-
 const router= express.Router();
 router.post("/create-event",requireSignIn,isAdmin,formidable(),createEventController);
 router.get("/get-event", getEventController);

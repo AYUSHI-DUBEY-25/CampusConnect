@@ -9,10 +9,10 @@ const connectDB = async () => {
     });
 
     console.log(
-      `✅ MongoDB Connected: ${conn.connection.host}`.bgGreen.white
+      `MongoDB Connected: ${conn.connection.host}`.bgGreen.white
     );
   } catch (error) {
-    console.error(`❌ Error in MongoDB connection: ${error.message}`.bgRed.white);
+    console.error(`Error in MongoDB connection: ${error.message}`.bgRed.white);
     process.exit(1); 
   }
 };

@@ -31,7 +31,6 @@ const eventSchema= new mongoose.Schema(
             data:Buffer,
             contentType:String,
         },
-        // ... inside eventSchema fields
 ticketsAvailable: {
   type: Number,
   required: true,

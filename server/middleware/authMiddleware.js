@@ -12,7 +12,6 @@ export const requireSignIn = async (req, res, next) => {
       });
     }
 
-    // Extract only the token (remove "Bearer ")
     const token = authHeader.split(" ")[1];
 
     const decode = JWT.verify(token, process.env.JWT_SECRET);

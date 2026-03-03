@@ -128,11 +128,9 @@ export const deleteEventController= async(req,res)=>{
 //update event
 export const updateEventController = async (req, res) => {
   try {
-    // destructure incoming fields (we'll normalize isHighlight & ticketsAvailable below)
     const { name, description, category, price, date } = req.fields;
     const { photo } = req.files || {};
 
-    // existing validations
     switch (true) {
       case !name:
         return res.status(400).send({ error: "Name is required" });
@@ -147,12 +145,9 @@ export const updateEventController = async (req, res) => {
       case photo && photo.size > 1000000:
         return res.status(400).send({ error: "Photo should be less than 1MB" });
     }
-
-    // normalize boolean flag sent from form: "true"/"false" or boolean
     const isHighlightFlag =
       req.fields.isHighlight === "true" || req.fields.isHighlight === true;
 
-    // normalize ticketsAvailable
     let ticketsAvailable = undefined;
     if (typeof req.fields.ticketsAvailable !== "undefined") {
       const parsed = Number(req.fields.ticketsAvailable);
@@ -163,10 +158,8 @@ export const updateEventController = async (req, res) => {
       }
       ticketsAvailable = Math.floor(parsed);
     }
-
-    // build update object carefully so we don't accidentally overwrite fields with undefined
     const updateObj = {
-      ...req.fields, // keep other fields
+      ...req.fields,
       slug: slugify(name),
       isHighlight: isHighlightFlag,
     };
@@ -175,7 +168,6 @@ export const updateEventController = async (req, res) => {
       updateObj.ticketsAvailable = ticketsAvailable;
     }
 
-    // update document
     const events = await eventmodel.findByIdAndUpdate(req.params.pid, updateObj, {
       new: true,
     });
@@ -184,14 +176,11 @@ export const updateEventController = async (req, res) => {
       return res.status(404).send({ success: false, message: "Event not found" });
     }
 
-    // handle photo separately (only if provided)
     if (photo) {
       events.photo.data = fs.readFileSync(photo.path);
       events.photo.contentType = photo.type;
       await events.save();
     }
-
-    // respond
     res.status(200).send({
       success: true,
       message: "Event Updated Successfully",
@@ -223,7 +212,7 @@ export const eventFiltersController = async (req, res) => {
 
     res.status(200).send({
       success: true,
-      event: events,   // FIXED (was "events")
+      event: events,
     });
   } catch (error) {
     console.log(error);
@@ -297,16 +286,12 @@ export const braintreeTokenController= async(req,res)=>{
     if (!cart || !Array.isArray(cart) || cart.length === 0) {
       return res.status(400).send({ success: false, message: "Cart is empty" });
     }
-
-    // 1) compute total using quantity
     let total = 0;
     cart.forEach((i) => {
       const qty = i.quantity ? Number(i.quantity) : 1;
       const price = Number(i.price) || 0;
       total += price * qty;
     });
-
-    // 2) validate availability BEFORE charging
     const insufficient = [];
     for (const item of cart) {
       const qty = item.quantity ? Number(item.quantity) : 1;
@@ -332,9 +317,7 @@ export const braintreeTokenController= async(req,res)=>{
       });
     }
 
-    console.log("🧾 Payment Attempt:", { total, items: cart.length });
-
-    // Helper to wrap braintree sale into a Promise
+    console.log("Payment Attempt:", { total, items: cart.length });
     const salePromise = (transaction) =>
       new Promise((resolve, reject) => {
         gateway.transaction.sale(transaction, (err, result) => {
@@ -342,10 +325,8 @@ export const braintreeTokenController= async(req,res)=>{
           return resolve(result);
         });
       });
-
-    // 3) Perform the transaction
     const saleRequest = {
-      amount: total.toFixed(2), // string, 2 decimals
+      amount: total.toFixed(2),
       paymentMethodNonce: nonce,
       options: { submitForSettlement: true },
     };
@@ -370,8 +351,6 @@ export const braintreeTokenController= async(req,res)=>{
         result,
       });
     }
-
-    // 4) Atomically decrement tickets for each event (guarded)
     const updateResults = [];
     try {
       for (const item of cart) {
@@ -383,15 +362,12 @@ export const braintreeTokenController= async(req,res)=>{
           { new: true }
         );
         if (!updated) {
-          // This indicates a race condition (rare). Throw to trigger rollback logic below.
           throw new Error(`Insufficient tickets for event ${eventId}`);
         }
         updateResults.push({ eventId, remaining: updated.ticketsAvailable });
       }
     } catch (invErr) {
       console.error("Inventory decrement failed after payment:", invErr);
-
-      // Attempt to void the transaction (best-effort). If void fails, you may need to refund.
       try {
         const txId = result.transaction && result.transaction.id;
         if (txId) {
@@ -405,7 +381,6 @@ export const braintreeTokenController= async(req,res)=>{
         }
       } catch (voidErr) {
         console.error("Failed to void transaction after inventory failure:", voidErr);
-        // At this point you might want to alert ops and attempt refund programmatically.
       }
 
       return res.status(500).send({
@@ -416,25 +391,20 @@ export const braintreeTokenController= async(req,res)=>{
       });
     }
 
-    // 5) Save order
     const orderDoc = await new ordermodel({
       products: cart,
       payment: result,
       buyer: req.user._id,
     }).save();
-
-    // 6) Clear server-side cart if you have one (optional)
     try {
       if (typeof cartModel !== "undefined" && cartModel) {
         await cartModel.deleteMany({ buyer: req.user._id });
       }
     } catch (cartClearErr) {
       console.error("Failed to clear server-side cart:", cartClearErr);
-      // not fatal — continue
     }
 
-    // 7) Respond with success and inventory updates
-    console.log("✅ Payment Success:", result.transaction.id);
+    console.log("Payment Success:", result.transaction.id);
     return res.status(200).send({
       success: true,
       message: "Payment successful and tickets reserved",

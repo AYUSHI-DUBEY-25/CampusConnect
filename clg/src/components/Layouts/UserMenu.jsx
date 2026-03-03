@@ -4,7 +4,6 @@ import { NavLink } from "react-router-dom";
 const Usermenu = () => {
   return (
     <>
-      {/* INLINE CSS */}
       <style>
         {`
           .dashboard-menu {
